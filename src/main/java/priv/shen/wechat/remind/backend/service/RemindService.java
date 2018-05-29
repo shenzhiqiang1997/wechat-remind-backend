@@ -1,15 +1,20 @@
 package priv.shen.wechat.remind.backend.service;
 
+import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import priv.shen.wechat.remind.backend.constant.Constant;
 import priv.shen.wechat.remind.backend.domain.Remind;
 import priv.shen.wechat.remind.backend.dto.*;
 import priv.shen.wechat.remind.backend.exception.GlobalException;
 import priv.shen.wechat.remind.backend.repository.RemindRepository;
-import priv.shen.wechat.remind.backend.result.Flag;
-import priv.shen.wechat.remind.backend.result.Message;
-import priv.shen.wechat.remind.backend.result.Result;
+import priv.shen.wechat.remind.backend.result.*;
+import priv.shen.wechat.remind.backend.schedule.RemindTemplateMessageJob;
+import priv.shen.wechat.remind.backend.template.RemindTemplateData;
+import priv.shen.wechat.remind.backend.template.RemindTemplateMessage;
+import priv.shen.wechat.remind.backend.template.TemplateDataElement;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,12 +22,19 @@ import java.util.Optional;
 public class RemindService {
     @Autowired
     private RemindRepository remindRepository;
+    @Autowired
+    private Scheduler scheduler;
+    @Autowired
+    private SimpleDateFormat sdf;
+    @Autowired
+    private TemplateMessageService templateMessageService;
 
-    public Result<Long> sendRemind(RemindView remindView){
+    public ClockResult sendRemind(RemindView remindView) throws Exception {
         Remind remind = new Remind();
         remind.setSenderId(remindView.getOpenid());
-        if (remindView.getSelfClock() == 1){
+        if (remindView.getSelf_clock() == 1){
             remind.setReceiverId(remindView.getOpenid());
+            startSendRemindJob(remindView.getOpenid(),null,remind);
         }else {
             remind.setState(0);
         }
@@ -32,43 +44,45 @@ public class RemindService {
         remind.setName(remindView.getName());
 
         remind = remindRepository.saveAndFlush(remind);
-        return new Result<>(Flag.SUCCESS.getCode(),remind.getRemindId());
+        return new ClockResult(Flag.SUCCESS.getCode(),remind.getRemindId());
     }
 
-    public Result<String> agreeRemind(AgreeView agreeView) {
+    public MessageResult agreeRemind(AgreeView agreeView) throws Exception {
         Optional<Remind> remindOptional = remindRepository.findById(agreeView.getClockId());
         if (!remindOptional.isPresent())
             throw new GlobalException(Message.AGREE_FAILURE.getContent());
 
         Remind remind = remindOptional.get();
-        if (agreeView.getCheck() ==1 )
+        if (agreeView.getCheck() == 1 ){
             remind.setState(1);
+            startSendRemindJob(remind.getReceiverId(),remind.getSenderId(),remind);
+        }
         else
             remind.setState(0);
 
         remind.setReceiverId(agreeView.getReceiverOpenId());
 
-        return new Result<>(Flag.SUCCESS.getCode(),Message.AGREE_SUCCESS.getContent());
+        return new MessageResult(Flag.SUCCESS.getCode(),Message.AGREE_SUCCESS.getContent());
     }
 
-    public Result<List<Remind>> listForSelf(OpenidView openidView) {
+    public ClockListResult listForSelf(OpenidView openidView) {
         List<Remind> remindList = remindRepository.findAllBySelfRemindAndReceiverId(1,openidView.getOpenid());
-        return new Result<>(Flag.SUCCESS.getCode(),remindList);
+        return new ClockListResult(Flag.SUCCESS.getCode(),remindList);
     }
 
-    public Result<List<Remind>> listForFriend(OpenidView openidView) {
+    public ClockListResult listForFriend(OpenidView openidView) {
         List<Remind> remindList = remindRepository.findAllBySelfRemindAndSenderId(0, openidView.getOpenid());
-        return new Result<>(Flag.SUCCESS.getCode(),remindList);
+        return new ClockListResult(Flag.SUCCESS.getCode(),remindList);
     }
 
-    public Result<String> delete(SecureRemindIdView receiverView) {
+    public MessageResult delete(SecureRemindIdView receiverView) {
         remindRepository.deleteByRemindIdAndReceiverIdEquals(receiverView.getClockId(),receiverView.getOpenid());
         remindRepository.deleteByRemindIdAndSenderIdEquals(receiverView.getClockId(),receiverView.getOpenid());
-        return new Result<>(Flag.SUCCESS.getCode(),Message.DELETE_SUCCESS.getContent());
+        return new MessageResult(Flag.SUCCESS.getCode(),Message.DELETE_SUCCESS.getContent());
     }
 
 
-    public Result<RemindDetail> getDetail(SecureRemindIdView secureRemindIdView) {
+    public RemindDetailResult getDetail(SecureRemindIdView secureRemindIdView) {
         Remind remind = remindRepository.findByRemindIdAndReceiverIdEquals(secureRemindIdView.getClockId(),secureRemindIdView.getOpenid());
         if (remind == null){
             remind = remindRepository.findByRemindIdAndSenderIdEquals(secureRemindIdView.getClockId(),secureRemindIdView.getOpenid());
@@ -78,8 +92,36 @@ public class RemindService {
             throw new GlobalException(Message.DETAIL_FAILURE.getContent());
         }
 
-        RemindDetail remindDetail = new RemindDetail(remind.getTitle(),remind.getContent(),remind.getName());
+        RemindDetailResult remindDetailResult = new RemindDetailResult(remind.getTitle(),remind.getContent(),remind.getName());
 
-        return new Result<>(Flag.SUCCESS.getCode(),remindDetail);
+        return remindDetailResult;
+    }
+
+    private void startSendRemindJob(String receiverOpenid,String senderOpenid,Remind remind) throws Exception{
+        RemindTemplateMessage remindTemplateMessage = new RemindTemplateMessage();
+        remindTemplateMessage.setTouser(receiverOpenid);
+        RemindTemplateData remindTemplateData = new RemindTemplateData();
+        remindTemplateData.setKeyword1(new TemplateDataElement(remind.getTitle()));
+        remindTemplateData.setKeyword2(new TemplateDataElement(sdf.format(remind.getTime())));
+        remindTemplateData.setKeyword3(new TemplateDataElement(remind.getContent()));
+        remindTemplateMessage.setData(remindTemplateData);
+
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put(Constant.RECEIVER_OPENID.getValue(),receiverOpenid);
+        jobDataMap.put(Constant.SENDER_OPENID.getValue(),senderOpenid);
+        jobDataMap.put(Constant.REMIND_TEMPLATE_MESSAGE.getValue(),remindTemplateMessage);
+        jobDataMap.put(Constant.TEMPLATE_MESSAGE_SERVICE.getValue(),templateMessageService);
+
+        JobDetail jobDetail = JobBuilder
+                .newJob(RemindTemplateMessageJob.class)
+                .usingJobData(jobDataMap)
+                .build();
+
+        Trigger trigger = TriggerBuilder
+                .newTrigger()
+                .startAt(remind.getTime())
+                .build();
+
+        scheduler.scheduleJob(jobDetail,trigger);
     }
 }

@@ -5,16 +5,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import priv.shen.wechat.remind.backend.exception.GlobalException;
 import priv.shen.wechat.remind.backend.result.Message;
 import priv.shen.wechat.remind.backend.result.Flag;
-import priv.shen.wechat.remind.backend.result.Result;
+import priv.shen.wechat.remind.backend.result.MessageResult;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
-    public Result<String> globalExceptionHandler(Exception e){
+    public MessageResult globalExceptionHandler(Exception e){
         e.printStackTrace();
         if (e instanceof GlobalException)
-            return new Result<>(Flag.SUCCESS.getCode(),e.getMessage());
+            return new MessageResult(Flag.SUCCESS.getCode(),e.getMessage());
         else
-            return new Result<>(Flag.FAILURE.getCode(), Message.SYSTEM_FAILURE.getContent());
+            return new MessageResult(Flag.FAILURE.getCode(), Message.SYSTEM_FAILURE.getContent());
     }
 }

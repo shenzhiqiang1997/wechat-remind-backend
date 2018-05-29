@@ -5,9 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class Result<T>{
+@AllArgsConstructor
+public class MessageResult {
     private Integer flag;
-    private T data;
+    private String message;
 }

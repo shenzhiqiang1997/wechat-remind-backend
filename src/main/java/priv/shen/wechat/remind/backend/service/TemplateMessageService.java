@@ -26,6 +26,7 @@ public class TemplateMessageService {
 
         Formid formid = formidRepository.findTopByOpenidOrderByDate(receiverOpenid);
         formidRepository.deleteById(formid.getFormid());
+        remindTemplateMessage.setForm_id(formid.getFormid());
 
         restTemplate.postForObject(templateMessageUrl,remindTemplateMessage,String.class);
     }
@@ -37,10 +38,14 @@ public class TemplateMessageService {
 
         Formid formid = formidRepository.findTopByOpenidOrderByDate(receiverOpenid);
         formidRepository.deleteById(formid.getFormid());
+        remindTemplateMessage.setForm_id(formid.getFormid());
+
         restTemplate.postForObject(templateMessageUrl,remindTemplateMessage,String.class);
 
         formid = formidRepository.findTopByOpenidOrderByDate(senderOpenid);
         formidRepository.deleteById(formid.getFormid());
+        remindTemplateMessage.setForm_id(formid.getFormid());
+
         restTemplate.postForObject(templateMessageUrl,remindTemplateMessage,String.class);
     }
 }

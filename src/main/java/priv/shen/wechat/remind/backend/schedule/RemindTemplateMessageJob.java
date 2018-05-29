@@ -1,7 +1,6 @@
 package priv.shen.wechat.remind.backend.schedule;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+
 import lombok.Setter;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

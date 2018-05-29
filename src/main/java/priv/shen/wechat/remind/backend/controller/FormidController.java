@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import priv.shen.wechat.remind.backend.dto.FormidView;
+import priv.shen.wechat.remind.backend.result.MessageResult;
 import priv.shen.wechat.remind.backend.result.Result;
 import priv.shen.wechat.remind.backend.service.FormidService;
 
@@ -14,7 +15,7 @@ public class FormidController {
     @Autowired
     private FormidService formidService;
 
-    public Result<String> save(@RequestBody FormidView formidView){
+    public MessageResult save(@RequestBody FormidView formidView){
         return formidService.saveFormid(formidView);
     }
 }

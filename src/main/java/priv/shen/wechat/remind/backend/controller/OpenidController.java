@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import priv.shen.wechat.remind.backend.dto.CodeView;
-import priv.shen.wechat.remind.backend.result.Result;
+import priv.shen.wechat.remind.backend.result.OpenidResult;
 import priv.shen.wechat.remind.backend.service.OpenidService;
 
 @RestController
@@ -15,7 +15,7 @@ public class OpenidController {
     @Autowired
     private OpenidService openidService;
     @PostMapping("/get")
-    public Result<String> get(@RequestBody CodeView codeView) throws Exception {
+    public OpenidResult get(@RequestBody CodeView codeView) throws Exception {
         return openidService.getOpenid(codeView);
     }
 }

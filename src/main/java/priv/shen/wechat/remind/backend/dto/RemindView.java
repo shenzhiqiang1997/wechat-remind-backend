@@ -9,10 +9,10 @@ import java.util.Date;
 public class RemindView {
     private String openid;
     private String name;
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy/MM/dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
     private Date time;
     private String title;
     private String content;
-    private Integer selfClock;
+    private Integer self_clock;
 }

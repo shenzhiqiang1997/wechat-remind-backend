@@ -5,9 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class Result<T>{
-    private Integer flag;
-    private T data;
+@AllArgsConstructor
+public class OpenidResult {
+    private String openid;
 }

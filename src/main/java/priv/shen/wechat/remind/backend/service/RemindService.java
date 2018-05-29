@@ -3,6 +3,7 @@ package priv.shen.wechat.remind.backend.service;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import priv.shen.wechat.remind.backend.constant.Constant;
 import priv.shen.wechat.remind.backend.domain.Remind;
 import priv.shen.wechat.remind.backend.dto.*;
@@ -29,24 +30,28 @@ public class RemindService {
     @Autowired
     private TemplateMessageService templateMessageService;
 
+    @Transactional
     public ClockResult sendRemind(RemindView remindView) throws Exception {
         Remind remind = new Remind();
         remind.setSenderId(remindView.getOpenid());
+        remind.setTime(remindView.getTime());
+        remind.setTitle(remindView.getTitle());
+        remind.setContent(remindView.getContent());
+        remind.setName(remindView.getName());
+        remind.setSelfRemind(remindView.getSelf_clock());
+
         if (remindView.getSelf_clock() == 1){
             remind.setReceiverId(remindView.getOpenid());
             startSendRemindJob(remindView.getOpenid(),null,remind);
         }else {
             remind.setState(0);
         }
-        remind.setTime(remindView.getTime());
-        remind.setTitle(remindView.getTitle());
-        remind.setContent(remindView.getContent());
-        remind.setName(remindView.getName());
 
         remind = remindRepository.saveAndFlush(remind);
-        return new ClockResult(Flag.SUCCESS.getCode(),remind.getRemindId());
+        return new ClockResult(Flag.SUCCESS.getCode(),remind.getId());
     }
 
+    @Transactional
     public MessageResult agreeRemind(AgreeView agreeView) throws Exception {
         Optional<Remind> remindOptional = remindRepository.findById(agreeView.getClockId());
         if (!remindOptional.isPresent())
@@ -55,7 +60,7 @@ public class RemindService {
         Remind remind = remindOptional.get();
         if (agreeView.getCheck() == 1 ){
             remind.setState(1);
-            startSendRemindJob(remind.getReceiverId(),remind.getSenderId(),remind);
+            startSendRemindJob(agreeView.getReceiverOpenId(),remind.getSenderId(),remind);
         }
         else
             remind.setState(0);
@@ -75,17 +80,18 @@ public class RemindService {
         return new ClockListResult(Flag.SUCCESS.getCode(),remindList);
     }
 
+    @Transactional
     public MessageResult delete(SecureRemindIdView receiverView) {
-        remindRepository.deleteByRemindIdAndReceiverIdEquals(receiverView.getClockId(),receiverView.getOpenid());
-        remindRepository.deleteByRemindIdAndSenderIdEquals(receiverView.getClockId(),receiverView.getOpenid());
+        remindRepository.deleteByIdAndReceiverIdEquals(receiverView.getClockId(),receiverView.getOpenid());
+        remindRepository.deleteByIdAndSenderIdEquals(receiverView.getClockId(),receiverView.getOpenid());
         return new MessageResult(Flag.SUCCESS.getCode(),Message.DELETE_SUCCESS.getContent());
     }
 
 
     public RemindDetailResult getDetail(SecureRemindIdView secureRemindIdView) {
-        Remind remind = remindRepository.findByRemindIdAndReceiverIdEquals(secureRemindIdView.getClockId(),secureRemindIdView.getOpenid());
+        Remind remind = remindRepository.findByIdAndReceiverIdEquals(secureRemindIdView.getClockId(),secureRemindIdView.getOpenid());
         if (remind == null){
-            remind = remindRepository.findByRemindIdAndSenderIdEquals(secureRemindIdView.getClockId(),secureRemindIdView.getOpenid());
+            remind = remindRepository.findByIdAndSenderIdEquals(secureRemindIdView.getClockId(),secureRemindIdView.getOpenid());
         }
 
         if (remind == null){

@@ -8,8 +8,8 @@ import java.util.List;
 public interface RemindRepository extends JpaRepository<Remind,Long> {
     List<Remind> findAllBySelfRemindAndReceiverId(Integer selfRemind,String receiverId);
     List<Remind> findAllBySelfRemindAndSenderId(Integer selfRemind,String senderId);
-    void deleteByRemindIdAndSenderIdEquals(Long remindId,String senderId);
-    void deleteByRemindIdAndReceiverIdEquals(Long remindId,String receiverId);
-    Remind findByRemindIdAndSenderIdEquals(Long remindId,String senderId);
-    Remind findByRemindIdAndReceiverIdEquals(Long remindId,String receiverId);
+    void deleteByIdAndSenderIdEquals(Long remindId, String senderId);
+    void deleteByIdAndReceiverIdEquals(Long remindId, String receiverId);
+    Remind findByIdAndSenderIdEquals(Long remindId, String senderId);
+    Remind findByIdAndReceiverIdEquals(Long remindId, String receiverId);
 }

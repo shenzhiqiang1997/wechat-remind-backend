@@ -1,15 +1,15 @@
 package priv.shen.wechat.remind.backend.domain;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
 
 @Entity
@@ -18,9 +18,9 @@ import java.util.Date;
 
 public class Remind {
     @Id
-    @GeneratedValue
-    @JsonFormat(pattern = "id")
-    private Long remindId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "remind_id")
+    private Long id;
     @JsonIgnore
     private String senderId;
     @JsonIgnore

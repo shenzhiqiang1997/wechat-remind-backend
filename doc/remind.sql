@@ -5,18 +5,20 @@
 
 
 drop table if exists remind;
+drop table if exists formid;
 
 /*==============================================================*/
 /* Table: remind                                                */
 /*==============================================================*/
 create table remind
 (
-   remind_id            int(64) not null auto_increment,
+   remind_id            bigint not null auto_increment,
    sender_id            char(28),
    receiver_id          char(28),
-   sender_name          varchar(16),
+   name          varchar(16),
    time                 datetime,
    title                char(10),
+   content              varchar(50),
    self_remind          int,
    state                int,
    primary key (remind_id)

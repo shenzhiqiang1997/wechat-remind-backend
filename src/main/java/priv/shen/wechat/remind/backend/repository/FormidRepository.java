@@ -6,6 +6,6 @@ import priv.shen.wechat.remind.backend.domain.Formid;
 import java.util.Date;
 
 public interface FormidRepository extends JpaRepository<Formid,String> {
-    Formid findTopByOpenidOrderByDate(String openid);
+    Formid findTop1ByOpenidOrderByDate(String openid);
     void deleteAllByDateBefore(Date date);
 }

@@ -10,7 +10,7 @@ import priv.shen.wechat.remind.backend.util.AccessTokenUtil;
 
 import java.util.Date;
 
-@Component
+@Component("myScheduler")
 public class Scheduler {
     @Autowired
     private FormidRepository formidRepository;
@@ -18,7 +18,8 @@ public class Scheduler {
     private StringRedisTemplate redisTemplate;
     @Autowired
     private AccessTokenUtil accessTokenUtil;
-    @Scheduled(fixedRate = 3600*1000*2)
+
+    @Scheduled(initialDelay = 0,fixedRate = 3600*1000*2)
     public void refreshAccessToken() throws Exception {
         String accessToken = accessTokenUtil.getAccessToken();
         redisTemplate.opsForValue().set(Constant.ACCESS_TOKEN.getValue(),accessToken);

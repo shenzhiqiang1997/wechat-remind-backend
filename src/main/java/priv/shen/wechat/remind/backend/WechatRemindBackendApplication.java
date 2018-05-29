@@ -10,7 +10,6 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.web.client.RestTemplate;
 import priv.shen.wechat.remind.backend.constant.Constant;
 import priv.shen.wechat.remind.backend.util.AccessTokenUtil;
-
 import java.text.SimpleDateFormat;
 
 @SpringBootApplication

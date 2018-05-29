@@ -22,3 +22,9 @@ create table remind
    primary key (remind_id)
 );
 
+create table formid (
+  formid bigint not null primary key,
+  openid char(28),
+  date datetime
+);
+

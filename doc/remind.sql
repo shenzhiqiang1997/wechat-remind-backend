@@ -23,7 +23,7 @@ create table remind
 );
 
 create table formid (
-  formid bigint not null primary key,
+  formid char(32) not null primary key,
   openid char(28),
   date datetime
 );

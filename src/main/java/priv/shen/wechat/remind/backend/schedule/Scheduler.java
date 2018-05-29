@@ -5,10 +5,15 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import priv.shen.wechat.remind.backend.constant.Constant;
+import priv.shen.wechat.remind.backend.repository.FormidRepository;
 import priv.shen.wechat.remind.backend.util.AccessTokenUtil;
+
+import java.util.Date;
 
 @Component
 public class Scheduler {
+    @Autowired
+    private FormidRepository formidRepository;
     @Autowired
     private StringRedisTemplate redisTemplate;
     @Autowired
@@ -17,5 +22,11 @@ public class Scheduler {
     public void refreshAccessToken() throws Exception {
         String accessToken = accessTokenUtil.getAccessToken();
         redisTemplate.opsForValue().set(Constant.ACCESS_TOKEN.getValue(),accessToken);
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void homeworkDeleteScheduler(){
+        Date deleteDate = new Date((new Date().getTime()-3600*1000*24*6));
+        formidRepository.deleteAllByDateBefore(deleteDate);
     }
 }

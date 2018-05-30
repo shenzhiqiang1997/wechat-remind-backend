@@ -3,7 +3,7 @@
 /* Created on:     2018/5/27 20:49:25                           */
 /*==============================================================*/
 
-
+CREATE DATABASE remind;
 drop table if exists remind;
 drop table if exists formid;
 

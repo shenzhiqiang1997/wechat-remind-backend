@@ -1,4 +1,4 @@
-后端使用Java语言，Mysql数据库和Redis数据库以及Tomcat作为基本开发环境。
+后端使用Java语言，Mysql数据库和Redis数据库以及Tomcat作为基本开发环境。  
 采用了Spring全家桶技术栈：
 * 以Spring Boot为脚手架开发后端服务接口。
 * 采用Spring Data Jpa完成访问数据库访问操作。
